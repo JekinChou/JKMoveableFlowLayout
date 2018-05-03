@@ -1,5 +1,5 @@
 //
-//  LYTagMoveFlowLayout.h
+//  JKTagMoveFlowLayout.h
 //  Aipai
 //
 //  Created by zhangjie on 2017/12/16.
@@ -7,7 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
-@protocol LYReorderableCollectionViewDelegateFlowLayout <UICollectionViewDelegateFlowLayout>
+@protocol JKReorderableCollectionViewDelegateFlowLayout <UICollectionViewDelegateFlowLayout>
 @optional
 //将要开始拖拽
 - (void)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout willBeginDraggingItemAtIndexPath:(NSIndexPath *)indexPath;
@@ -18,7 +18,7 @@
 //已经结束拖拽
 - (void)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout didEndDraggingItemAtIndexPath:(NSIndexPath *)indexPath;
 @end
-@protocol LYReorderableCollectionViewDataSource <UICollectionViewDataSource>
+@protocol JKReorderableCollectionViewDataSource <UICollectionViewDataSource>
 @optional
 //将要将item开始移动
 - (void)collectionView:(UICollectionView *)collectionView itemAtIndexPath:(NSIndexPath *)fromIndexPath willMoveToIndexPath:(NSIndexPath *)toIndexPath;
