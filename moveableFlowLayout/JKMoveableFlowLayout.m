@@ -192,7 +192,6 @@ static NSString * const kJKCollectionViewKeyPath = @"collectionView";
                 UICollectionViewLayoutAttributes *layoutAttributes = [self layoutAttributesForItemAtIndexPath:currentIndexPath];
                 
                 self.longPressGestureRecognizer.enabled = NO;
-               
                 [UIView
                  animateWithDuration:0.3
                  delay:0.0
