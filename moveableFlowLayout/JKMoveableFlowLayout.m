@@ -160,13 +160,13 @@ static NSString * const kJKCollectionViewKeyPath = @"collectionView";
                 [self.delegate collectionView:self.collectionView layout:self didBeginDraggingItemAtIndexPath:self.selectedItemIndexPath];
             }
             
-            @weakify(self);
+            
             [UIView
              animateWithDuration:0.3
              delay:0.0
              options:UIViewAnimationOptionBeginFromCurrentState
              animations:^{
-                 @strongify(self);
+                 
                  self.currentView.transform = CGAffineTransformMakeScale(1.1f, 1.1f);
                  highlightedImageView.alpha = 0.0f;
                  imageView.alpha = 1.0f;
@@ -192,19 +192,18 @@ static NSString * const kJKCollectionViewKeyPath = @"collectionView";
                 UICollectionViewLayoutAttributes *layoutAttributes = [self layoutAttributesForItemAtIndexPath:currentIndexPath];
                 
                 self.longPressGestureRecognizer.enabled = NO;
-                @weakify(self);
+               
                 [UIView
                  animateWithDuration:0.3
                  delay:0.0
                  options:UIViewAnimationOptionBeginFromCurrentState
                  animations:^{
-                     @strongify(self);
                          self.currentView.transform = CGAffineTransformMakeScale(1.0f, 1.0f);
                          self.currentView.center = layoutAttributes.center;
                  }
                  completion:^(BOOL finished) {
                      self.longPressGestureRecognizer.enabled = YES;
-                     @strongify(self);
+                     
                          [self.currentView removeFromSuperview];
                          self.currentView = nil;
                          [self invalidateLayout];
@@ -334,13 +333,11 @@ static NSString * const kJKCollectionViewKeyPath = @"collectionView";
     if ([self.dataSource respondsToSelector:@selector(collectionView:itemAtIndexPath:willMoveToIndexPath:)]) {
         [self.dataSource collectionView:self.collectionView itemAtIndexPath:previousIndexPath willMoveToIndexPath:newIndexPath];
     }
-    @weakify(self);
+    
     [self.collectionView performBatchUpdates:^{
-        @strongify(self);
         [self.collectionView deleteItemsAtIndexPaths:@[ previousIndexPath ]];
         [self.collectionView insertItemsAtIndexPaths:@[ newIndexPath ]];
     } completion:^(BOOL finished) {
-        @strongify(self);
         if ([self.dataSource respondsToSelector:@selector(collectionView:itemAtIndexPath:didMoveToIndexPath:)]) {
             [self.dataSource collectionView:self.collectionView itemAtIndexPath:previousIndexPath didMoveToIndexPath:newIndexPath];
         }
