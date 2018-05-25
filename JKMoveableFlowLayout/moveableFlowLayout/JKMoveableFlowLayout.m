@@ -160,13 +160,13 @@ static NSString * const kJKCollectionViewKeyPath = @"collectionView";
                 [self.delegate collectionView:self.collectionView layout:self didBeginDraggingItemAtIndexPath:self.selectedItemIndexPath];
             }
             
-            @weakify(self);
+            
             [UIView
              animateWithDuration:0.3
              delay:0.0
              options:UIViewAnimationOptionBeginFromCurrentState
              animations:^{
-                 @strongify(self);
+                 
                  self.currentView.transform = CGAffineTransformMakeScale(1.1f, 1.1f);
                  highlightedImageView.alpha = 0.0f;
                  imageView.alpha = 1.0f;
