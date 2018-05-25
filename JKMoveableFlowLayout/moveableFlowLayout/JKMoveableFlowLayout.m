@@ -9,7 +9,7 @@
 #import "JKMoveableFlowLayout.h"
 #import <objc/runtime.h>
 CG_INLINE CGPoint
-JKS_CGPointAdd(CGPoint point1, CGPoint point2) {
+JKCGPointAdd(CGPoint point1, CGPoint point2) {
     return CGPointMake(point1.x + point2.x, point1.y + point2.y);
 }
 typedef NS_ENUM(NSInteger, JKScrollingDirection) {
@@ -23,26 +23,26 @@ static NSString * const kJKScrollingDirectionKey = @"JKScrollingDirection";
 static NSString * const kJKCollectionViewKeyPath = @"collectionView";
 
 
-@interface CADisplayLink (JK_userInfo)
-@property (nonatomic, copy) NSDictionary *JK_userInfo;
+@interface CADisplayLink (userInfo)
+@property (nonatomic, copy) NSDictionary *userInfo;
 @end
 
-@implementation CADisplayLink (JK_userInfo)
-- (void) setJK_userInfo:(NSDictionary *) JK_userInfo {
-    objc_setAssociatedObject(self, "JK_userInfo", JK_userInfo, OBJC_ASSOCIATION_COPY);
+@implementation CADisplayLink (userInfo)
+- (void) setUserInfo:(NSDictionary *) userInfo {
+    objc_setAssociatedObject(self, "userInfo", userInfo, OBJC_ASSOCIATION_COPY);
 }
 
-- (NSDictionary *) JK_userInfo {
-    return objc_getAssociatedObject(self, "JK_userInfo");
+- (NSDictionary *)userInfo {
+    return objc_getAssociatedObject(self, "userInfo");
 }
 @end
 
 @interface UICollectionViewCell (JKReorderableCollectionViewFlowLayout)
-- (UIView *)JK_snapshotView;
+- (UIView *)snapshotView;
 @end
 
 @implementation UICollectionViewCell (JKReorderableCollectionViewFlowLayout)
-- (UIView *)JK_snapshotView {
+- (UIView *)snapshotView {
     if ([self respondsToSelector:@selector(snapshotViewAfterScreenUpdates:)]) {
         return [self snapshotViewAfterScreenUpdates:YES];
     } else {
@@ -103,12 +103,12 @@ static NSString * const kJKCollectionViewKeyPath = @"collectionView";
 }
 - (void)setupScrollTimerInDirection:(JKScrollingDirection)direction {
     if (!self.displayLink.paused) {
-        JKScrollingDirection oldDirection = [self.displayLink.JK_userInfo[kJKScrollingDirectionKey] integerValue];
-    if (direction == oldDirection)  return;
+        JKScrollingDirection oldDirection = [self.displayLink.userInfo[kJKScrollingDirectionKey] integerValue];
+        if (direction == oldDirection)  return;
     }
     [self invalidatesScrollTimer];
     self.displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(handleScroll:)];
-    self.displayLink.JK_userInfo = @{ kJKScrollingDirectionKey : @(direction) };
+    self.displayLink.userInfo = @{ kJKScrollingDirectionKey : @(direction) };
     [self.displayLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
 }
 - (void)tearDownCollectionView {
@@ -118,7 +118,7 @@ static NSString * const kJKCollectionViewKeyPath = @"collectionView";
         _longPressGestureRecognizer.delegate = nil;
         _longPressGestureRecognizer = nil;
     }
-
+    
     if (_panGestureRecognizer) {
         UIView *view = _panGestureRecognizer.view;
         if (view) [view removeGestureRecognizer:_panGestureRecognizer];
@@ -145,11 +145,11 @@ static NSString * const kJKCollectionViewKeyPath = @"collectionView";
             UICollectionViewCell *collectionViewCell = [self.collectionView cellForItemAtIndexPath:self.selectedItemIndexPath];
             self.currentView = [[UIView alloc] initWithFrame:collectionViewCell.frame];
             collectionViewCell.highlighted = YES;
-            UIView *highlightedImageView = [collectionViewCell JK_snapshotView];
+            UIView *highlightedImageView = [collectionViewCell snapshotView];
             highlightedImageView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
             highlightedImageView.alpha = 1.0f;
             collectionViewCell.highlighted = NO;
-            UIView *imageView = [collectionViewCell JK_snapshotView];
+            UIView *imageView = [collectionViewCell snapshotView];
             imageView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
             imageView.alpha = 0.0f;
             [self.currentView addSubview:imageView];
@@ -160,19 +160,19 @@ static NSString * const kJKCollectionViewKeyPath = @"collectionView";
                 [self.delegate collectionView:self.collectionView layout:self didBeginDraggingItemAtIndexPath:self.selectedItemIndexPath];
             }
             
-            
+            @weakify(self);
             [UIView
              animateWithDuration:0.3
              delay:0.0
              options:UIViewAnimationOptionBeginFromCurrentState
              animations:^{
-                 
+                 @strongify(self);
                  self.currentView.transform = CGAffineTransformMakeScale(1.1f, 1.1f);
                  highlightedImageView.alpha = 0.0f;
                  imageView.alpha = 1.0f;
              }
              completion:^(BOOL finished) {
-                [highlightedImageView removeFromSuperview];
+                 [highlightedImageView removeFromSuperview];
              }];
             
             [self invalidateLayout];
@@ -192,23 +192,25 @@ static NSString * const kJKCollectionViewKeyPath = @"collectionView";
                 UICollectionViewLayoutAttributes *layoutAttributes = [self layoutAttributesForItemAtIndexPath:currentIndexPath];
                 
                 self.longPressGestureRecognizer.enabled = NO;
+                @weakify(self);
                 [UIView
                  animateWithDuration:0.3
                  delay:0.0
                  options:UIViewAnimationOptionBeginFromCurrentState
                  animations:^{
-                         self.currentView.transform = CGAffineTransformMakeScale(1.0f, 1.0f);
-                         self.currentView.center = layoutAttributes.center;
+                     @strongify(self);
+                     self.currentView.transform = CGAffineTransformMakeScale(1.0f, 1.0f);
+                     self.currentView.center = layoutAttributes.center;
                  }
                  completion:^(BOOL finished) {
                      self.longPressGestureRecognizer.enabled = YES;
-                     
-                         [self.currentView removeFromSuperview];
-                         self.currentView = nil;
-                         [self invalidateLayout];
-                         if ([self.delegate respondsToSelector:@selector(collectionView:layout:didEndDraggingItemAtIndexPath:)]) {
-                             [self.delegate collectionView:self.collectionView layout:self didEndDraggingItemAtIndexPath:currentIndexPath];
-                         }
+                     @strongify(self);
+                     [self.currentView removeFromSuperview];
+                     self.currentView = nil;
+                     [self invalidateLayout];
+                     if ([self.delegate respondsToSelector:@selector(collectionView:layout:didEndDraggingItemAtIndexPath:)]) {
+                         [self.delegate collectionView:self.collectionView layout:self didEndDraggingItemAtIndexPath:currentIndexPath];
+                     }
                      
                  }];
             }
@@ -222,7 +224,7 @@ static NSString * const kJKCollectionViewKeyPath = @"collectionView";
         case UIGestureRecognizerStateBegan:
         case UIGestureRecognizerStateChanged: {
             self.panTranslationInCollectionView = [gestureRecognizer translationInView:self.collectionView];
-            CGPoint viewCenter = self.currentView.center = JKS_CGPointAdd(self.currentViewCenter, self.panTranslationInCollectionView);
+            CGPoint viewCenter = self.currentView.center = JKCGPointAdd(self.currentViewCenter, self.panTranslationInCollectionView);
             
             [self invalidateLayoutIfNecessary];
             
@@ -256,12 +258,12 @@ static NSString * const kJKCollectionViewKeyPath = @"collectionView";
             [self invalidatesScrollTimer];
         } break;
         default:
-          
-        break;
+            
+            break;
     }
 }
 - (void)handleScroll:(CADisplayLink *)displayLink {
-    JKScrollingDirection direction = (JKScrollingDirection)[displayLink.JK_userInfo[kJKScrollingDirectionKey] integerValue];
+    JKScrollingDirection direction = (JKScrollingDirection)[displayLink.userInfo[kJKScrollingDirectionKey] integerValue];
     if (direction == JKScrollingDirectionUnknown)  return;
     CGSize frameSize = self.collectionView.bounds.size;
     CGSize contentSize = self.collectionView.contentSize;
@@ -309,13 +311,13 @@ static NSString * const kJKCollectionViewKeyPath = @"collectionView";
             translation = CGPointMake(distance, 0.0f);
         } break;
         default:
-         break;
+            break;
     }
-    self.currentViewCenter = JKS_CGPointAdd(self.currentViewCenter, translation);
-    self.currentView.center = JKS_CGPointAdd(self.currentViewCenter, self.panTranslationInCollectionView);
-    self.collectionView.contentOffset = JKS_CGPointAdd(contentOffset, translation);
+    self.currentViewCenter = JKCGPointAdd(self.currentViewCenter, translation);
+    self.currentView.center = JKCGPointAdd(self.currentViewCenter, self.panTranslationInCollectionView);
+    self.collectionView.contentOffset = JKCGPointAdd(contentOffset, translation);
 }
-- (void)appJKLayoutAttributes:(UICollectionViewLayoutAttributes *)layoutAttributes {
+- (void)applyLayoutAttributes:(UICollectionViewLayoutAttributes *)layoutAttributes {
     if ([layoutAttributes.indexPath isEqual:self.selectedItemIndexPath]) {
         layoutAttributes.hidden = YES;
     }
@@ -332,11 +334,13 @@ static NSString * const kJKCollectionViewKeyPath = @"collectionView";
     if ([self.dataSource respondsToSelector:@selector(collectionView:itemAtIndexPath:willMoveToIndexPath:)]) {
         [self.dataSource collectionView:self.collectionView itemAtIndexPath:previousIndexPath willMoveToIndexPath:newIndexPath];
     }
-    
+    @weakify(self);
     [self.collectionView performBatchUpdates:^{
+        @strongify(self);
         [self.collectionView deleteItemsAtIndexPaths:@[ previousIndexPath ]];
         [self.collectionView insertItemsAtIndexPaths:@[ newIndexPath ]];
     } completion:^(BOOL finished) {
+        @strongify(self);
         if ([self.dataSource respondsToSelector:@selector(collectionView:itemAtIndexPath:didMoveToIndexPath:)]) {
             [self.dataSource collectionView:self.collectionView itemAtIndexPath:previousIndexPath didMoveToIndexPath:newIndexPath];
         }
@@ -349,7 +353,7 @@ static NSString * const kJKCollectionViewKeyPath = @"collectionView";
     for (UICollectionViewLayoutAttributes *layoutAttributes in layoutAttributesForElementsInRect) {
         switch (layoutAttributes.representedElementCategory) {
             case UICollectionElementCategoryCell: {
-                [self appJKLayoutAttributes:layoutAttributes];
+                [self applyLayoutAttributes:layoutAttributes];
             } break;
             default: {
                 // Do nothing...
@@ -365,7 +369,7 @@ static NSString * const kJKCollectionViewKeyPath = @"collectionView";
     
     switch (layoutAttributes.representedElementCategory) {
         case UICollectionElementCategoryCell: {
-            [self appJKLayoutAttributes:layoutAttributes];
+            [self applyLayoutAttributes:layoutAttributes];
         } break;
         default: {
         } break;
@@ -382,7 +386,7 @@ static NSString * const kJKCollectionViewKeyPath = @"collectionView";
     return YES;
 }
 
-- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneousJKWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
     if ([self.longPressGestureRecognizer isEqual:gestureRecognizer]) {
         return [self.panGestureRecognizer isEqual:otherGestureRecognizer];
     }
