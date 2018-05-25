@@ -164,7 +164,6 @@ static NSString * const kJKCollectionViewKeyPath = @"collectionView";
              delay:0.0
              options:UIViewAnimationOptionBeginFromCurrentState
              animations:^{
-                 
                  self.currentView.transform = CGAffineTransformMakeScale(1.1f, 1.1f);
                  highlightedImageView.alpha = 0.0f;
                  imageView.alpha = 1.0f;
@@ -172,7 +171,6 @@ static NSString * const kJKCollectionViewKeyPath = @"collectionView";
              completion:^(BOOL finished) {
                  [highlightedImageView removeFromSuperview];
              }];
-            
             [self invalidateLayout];
         } break;
         case UIGestureRecognizerStateCancelled:
@@ -190,13 +188,11 @@ static NSString * const kJKCollectionViewKeyPath = @"collectionView";
                 UICollectionViewLayoutAttributes *layoutAttributes = [self layoutAttributesForItemAtIndexPath:currentIndexPath];
                 
                 self.longPressGestureRecognizer.enabled = NO;
-                
                 [UIView
                  animateWithDuration:0.3
                  delay:0.0
                  options:UIViewAnimationOptionBeginFromCurrentState
                  animations:^{
-                     
                      self.currentView.transform = CGAffineTransformMakeScale(1.0f, 1.0f);
                      self.currentView.center = layoutAttributes.center;
                  }
@@ -207,8 +203,7 @@ static NSString * const kJKCollectionViewKeyPath = @"collectionView";
                      [self invalidateLayout];
                      if ([self.delegate respondsToSelector:@selector(collectionView:layout:didEndDraggingItemAtIndexPath:)]) {
                          [self.delegate collectionView:self.collectionView layout:self didEndDraggingItemAtIndexPath:currentIndexPath];
-                     }
-                     
+                     }                     
                  }];
             }
         } break;
@@ -331,13 +326,10 @@ static NSString * const kJKCollectionViewKeyPath = @"collectionView";
     if ([self.dataSource respondsToSelector:@selector(collectionView:itemAtIndexPath:willMoveToIndexPath:)]) {
         [self.dataSource collectionView:self.collectionView itemAtIndexPath:previousIndexPath willMoveToIndexPath:newIndexPath];
     }
-    
     [self.collectionView performBatchUpdates:^{
-    
         [self.collectionView deleteItemsAtIndexPaths:@[ previousIndexPath ]];
         [self.collectionView insertItemsAtIndexPaths:@[ newIndexPath ]];
     } completion:^(BOOL finished) {
-
         if ([self.dataSource respondsToSelector:@selector(collectionView:itemAtIndexPath:didMoveToIndexPath:)]) {
             [self.dataSource collectionView:self.collectionView itemAtIndexPath:previousIndexPath didMoveToIndexPath:newIndexPath];
         }
