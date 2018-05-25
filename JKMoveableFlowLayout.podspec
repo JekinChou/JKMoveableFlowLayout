@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
 #
 
 s.name         = "JKMoveableFlowLayout"
-s.version      = "0.0.3"
+s.version      = "0.0.4"
 s.summary      = "可移动拖拽的flowlayout."
 s.homepage     = "https://github.com/JekinChou/JKMoveableFlowLayout"
 s.license      = { :type => "MIT", :file => "FILE_LICENSE" }
@@ -30,3 +30,4 @@ s.frameworks = "UIKit"
 
 
 end
+
